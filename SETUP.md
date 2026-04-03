@@ -33,7 +33,7 @@ Use a local server (not `file://`) so `config.js` and `app.js` load reliably.
    git push -u origin main
    ```
 
-   Include at least: `index.html`, `styles.css`, `app.js`, `config.js`, and this file if you want docs online.
+   Include at least: `index.html`, `styles.css`, `app.js`, `config.js`, and the hero video `My Movie 4.mp4` (referenced by the home page), plus this file if you want docs online.
 
 3. **Turn on Pages:** on GitHub open the repo → **Settings** → **Pages** (left sidebar).
 

@@ -56,6 +56,7 @@
     castEmpty: document.getElementById("castEmpty"),
     lastUpdated: document.getElementById("lastUpdated"),
     btnSyncSheet: document.getElementById("btnSyncSheet"),
+    openSheetLink: document.getElementById("openSheetLink"),
     drinkFilterBar: document.getElementById("drinkFilter"),
     template: document.getElementById("castRowTemplate"),
     tierTemplate: document.getElementById("castTierTemplate"),
@@ -72,6 +73,23 @@
     els.sheetBanner.classList.add("is-hidden");
     els.sheetBanner.classList.remove("is-error");
     els.sheetBanner.textContent = "";
+  }
+
+  function updateSheetLink() {
+    const link = els.openSheetLink;
+    if (!link) return;
+    const cfg = getSheetConfig();
+    if (cfg && cfg.sheetId) {
+      const sid = encodeURIComponent(cfg.sheetId);
+      const gid = encodeURIComponent(cfg.gid);
+      link.href = `https://docs.google.com/spreadsheets/d/${sid}/edit#gid=${gid}`;
+      link.setAttribute("aria-disabled", "false");
+      link.classList.remove("is-hidden");
+    } else {
+      link.href = "#";
+      link.setAttribute("aria-disabled", "true");
+      link.classList.add("is-hidden");
+    }
   }
 
   function fetchSheetGviz(sheetId, gid) {
@@ -365,12 +383,20 @@
     const nameEl = node.querySelector(".cast-card__name");
     const drinkBadge = node.querySelector(".cast-card__drink-badge");
     const timeEl = node.querySelector(".cast-card__time-value");
+    const timeSecNote = node.querySelector(".cast-card__time-sec-note");
 
     nameEl.textContent = person.name;
     const drink = normalizeDrink(person.drink);
     drinkBadge.textContent = drink.label;
     drinkBadge.classList.add("cast-card__drink-badge--" + drink.kind);
     timeEl.textContent = person.time;
+    const secs = parseTimeToSeconds(person.time);
+    if (secs !== null && timeSecNote) {
+      timeSecNote.textContent = `${secs.toLocaleString()} s total`;
+      timeSecNote.hidden = false;
+    } else if (timeSecNote) {
+      timeSecNote.hidden = true;
+    }
     img.alt = `Photo of ${person.name}`;
     if (person.image) img.src = person.image;
     else img.removeAttribute("src");
@@ -398,6 +424,7 @@
   }
 
   function renderAll() {
+    updateSheetLink();
     els.castList.innerHTML = "";
     const cfg = getSheetConfig();
 
@@ -472,4 +499,17 @@
   if (getSheetConfig()) {
     syncFromSheet().finally(() => renderAll());
   }
+
+  (function initHeroVideo() {
+    const v = document.querySelector(".title-block__poster-video");
+    const fb = document.getElementById("heroPosterFallback");
+    if (!v) return;
+    v.addEventListener("error", () => {
+      v.classList.add("is-hidden");
+      if (fb) fb.classList.remove("is-hidden");
+    });
+    v.play().catch(() => {
+      /* Autoplay may require a user gesture in some browsers; video still loops when played. */
+    });
+  })();
 })();

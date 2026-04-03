@@ -18,6 +18,13 @@
       <nav class="uni-nav" aria-label="Primary">
         <a href="#" class="uni-nav__link uni-nav__link--active">Leaderboard</a>
       </nav>
+      <a
+        class="btn-sheet-link is-hidden"
+        id="openSheetLink"
+        href="#"
+        target="_blank"
+        rel="noopener noreferrer"
+        >Google Sheet</a>
       <button type="button" class="btn-sync is-hidden" id="btnSyncSheet" title="Reload data from Google Sheet">
         Refresh sheet
       </button>
@@ -27,7 +34,18 @@
   <main class="board-main">
     <section class="title-block" aria-labelledby="page-title">
       <div class="title-block__poster">
-        <div class="title-block__poster-placeholder" aria-hidden="true">
+        <video
+          class="title-block__poster-video"
+          autoplay
+          muted
+          loop
+          playsinline
+          preload="auto"
+          aria-label="Beer drinking time clip"
+        >
+          <source src="My%20Movie%204.mp4" type="video/mp4" />
+        </video>
+        <div class="title-block__poster-placeholder is-hidden" id="heroPosterFallback" aria-hidden="true">
           <span class="title-block__poster-initials">BDT</span>
         </div>
       </div>
@@ -35,7 +53,7 @@
         <h1 id="page-title" class="title-block__name">Beer Drinking Time</h1>
         <p class="title-block__tagline">Season leaderboard · informal study cohort</p>
         <div class="title-block__facts">
-          <span class="fact"><strong>Format</strong> timed session</span>
+          <span class="fact"><strong>Rank</strong> fastest total time (seconds)</span>
           <span class="fact"><strong>Updated</strong> <time id="lastUpdated">—</time></span>
         </div>
       </div>
@@ -46,7 +64,7 @@
     <section class="cast-section" aria-labelledby="cast-heading">
       <div class="section-heading">
         <h2 id="cast-heading" class="section-heading__title">Leaderboard</h2>
-        <p class="section-heading__sub">Name · drink · portrait · time (from Google Sheet)</p>
+        <p class="section-heading__sub">Name · drink · portrait · time in seconds (from Google Sheet)</p>
       </div>
       <div class="drink-filter is-hidden" id="drinkFilter" role="group" aria-label="Filter by drink">
         <span class="drink-filter__label">Show</span>
@@ -87,8 +105,11 @@
           <span class="cast-card__drink-badge"></span>
         </div>
         <div class="cast-card__time-row">
-          <span class="cast-card__time-label">Time</span>
-          <span class="cast-card__time-value time-meter"></span>
+          <span class="cast-card__time-label">Time (seconds)</span>
+          <div class="cast-card__time-stack">
+            <span class="cast-card__time-value time-meter"></span>
+            <span class="cast-card__time-sec-note" hidden></span>
+          </div>
         </div>
       </div>
     </li>
