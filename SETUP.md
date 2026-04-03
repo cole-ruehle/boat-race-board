@@ -55,18 +55,19 @@ The site **only displays** rows from your spreadsheet; all editing happens in **
 
 - Row **1** must be headers (any column order is fine):
 
-  | Name | Image | Time | Drink |
-  |------|-------|------|-------|
-  | Jordan Lee | https://example.com/photo.jpg | 0:45 | beer |
+  | Name | Image | Time | Drink | Class |
+  |------|-------|------|-------|-------|
+  | Jordan Lee | https://example.com/photo.jpg | 0:45 | beer | 2026 |
 
 - **Name** — display name  
 - **Image** — `https://…` link to a photo, or a short JPEG **data URL** pasted into the cell (cells are limited to about 50,000 characters)  
-- **Time** — any text (e.g. `1:12`, `45 min`); used for sorting (shortest first). **Decimals = minutes:** `2.5` means 2 minutes 30 seconds (also how Google Sheets often stores a number like `2.5`). Plain integers like `45` or `120` are treated as **seconds**.  
-- **Drink** — column header **Drink**, **Beverage**, or **Liquid**. Put **water** or **beer** (wording is flexible: e.g. `IPA`, `lager`, `H2O` still classify). Leave empty if unknown.
+- **Time** — used for sorting (shortest first). **Plain numbers are seconds** (decimals kept, e.g. `2.3` → 2.3 s). Use **`mm:ss`** or **`h:mm:ss`** with optional fractional seconds (e.g. `0:45.2`), or add **`min`** for minutes (e.g. `2.5 min`).  
+- **Drink** — column header **Drink**, **Beverage**, or **Liquid**. Put **water** or **beer** (wording is flexible: e.g. `IPA`, `lager`, `H2O` still classify). Leave empty if unknown.  
+- **Class** — class year (headers such as **Class**, **Class year**, **Year**, **Grade**, or **Cohort**). Any text works (e.g. `2026`, `'26`, `Sophomore`). Cards show a **Class** row only when this cell is non-empty.
 
-If you use the default column order **Name · Image · Time · Drink** with no matching header names, the fourth column is read as drink.
+If you use the default column order **Name · Image · Time · Drink** with no matching header names, the fourth column is read as drink. If you add a **fifth** column in that same order, it is read as class year.
 
-Add one data row per person. Other columns are ignored unless they are the only unnamed extra column (prefer using a **Drink** header).
+Add one data row per person. Other columns are ignored unless they match the patterns above.
 
 ### “1 v” combined estimate
 

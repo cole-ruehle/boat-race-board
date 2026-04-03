@@ -64,7 +64,7 @@
     <section class="cast-section" aria-labelledby="cast-heading">
       <div class="section-heading">
         <h2 id="cast-heading" class="section-heading__title">Leaderboard</h2>
-        <p class="section-heading__sub">Name · drink · portrait · time (from Google Sheet)</p>
+        <p class="section-heading__sub">Name · class year · drink · portrait · time (from Google Sheet)</p>
       </div>
       <div class="drink-filter is-hidden" id="drinkFilter" role="group" aria-label="Filter by drink">
         <span class="drink-filter__label">Show</span>
@@ -118,7 +118,13 @@
         <div class="cast-card__photo-fallback" aria-hidden="true"></div>
       </div>
       <div class="cast-card__body">
-        <h3 class="cast-card__name"></h3>
+        <div class="cast-card__identity">
+          <h3 class="cast-card__name"></h3>
+          <div class="cast-card__class-row" hidden>
+            <span class="cast-card__stat-label">Class</span>
+            <span class="cast-card__class-value"></span>
+          </div>
+        </div>
         <div class="cast-card__drink-row">
           <span class="cast-card__stat-label">Drink</span>
           <span class="cast-card__drink-badge"></span>

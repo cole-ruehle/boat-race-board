@@ -21,6 +21,7 @@
           image: String(p.image ?? ""),
           time: String(p.time ?? "—"),
           drink: String(p.drink ?? ""),
+          classYear: String(p.classYear ?? ""),
         })),
         updatedAt: data.updatedAt || Date.now(),
       };
@@ -159,7 +160,19 @@
     return "";
   }
 
-  /** @returns {number|null} seconds for sorting, or null if no comparable time (sorted last) */
+  /** Prefer displayed time (fractions of a day, mm:ss, etc.) over raw `v` for parsing. */
+  function cellTextForTime(cell) {
+    if (!cell) return "";
+    const f = cell.f != null && cell.f !== "" ? String(cell.f).trim() : "";
+    if (f && /\d\s*:\s*\d/.test(f)) {
+      return f.replace(/\s/g, "");
+    }
+    return cellText(cell);
+  }
+
+  /**
+   * @returns {number|null} seconds for sorting/estimates (fractional ok, millisecond precision from text)
+   */
   function parseTimeToSeconds(raw) {
     const s = String(raw ?? "").trim();
     if (!s) return null;
@@ -175,35 +188,35 @@
 
     const minWord = compact.match(/^(\d+(?:\.\d+)?)(?:min(?:ute)?s?|m)$/i);
     if (minWord) {
-      return Math.round(parseFloat(minWord[1]) * 60);
+      return parseFloat(minWord[1]) * 60;
     }
 
     const secWord = compact.match(/^(\d+(?:\.\d+)?)(?:sec(?:ond)?s?|s)$/i);
     if (secWord) {
-      return Math.round(parseFloat(secWord[1]));
+      return parseFloat(secWord[1]);
     }
 
-    const hms = compact.match(/^(\d+):(\d{1,2}):(\d{1,2})$/);
+    const hms = compact.match(/^(\d+):(\d{1,2}):(\d{1,2}(?:\.\d+)?)$/);
     if (hms) {
       const h = parseInt(hms[1], 10);
       const m = parseInt(hms[2], 10);
-      const sec = parseInt(hms[3], 10);
+      const sec = parseFloat(hms[3]);
       if (m >= 60 || sec >= 60 || Number.isNaN(h + m + sec)) return null;
       return h * 3600 + m * 60 + sec;
     }
 
-    const ms = compact.match(/^(\d+):(\d{1,2})$/);
+    const ms = compact.match(/^(\d+):(\d{1,2}(?:\.\d+)?)$/);
     if (ms) {
       const a = parseInt(ms[1], 10);
-      const b = parseInt(ms[2], 10);
+      const b = parseFloat(ms[2]);
       if (b >= 60 || Number.isNaN(a + b)) return null;
       return a * 60 + b;
     }
 
     const compactNorm = compact.replace(",", ".");
-    // Decimal = decimal minutes (e.g. 2.5 → 2 min 30 sec). Matches Sheets numeric cells like 2.5.
+    // Plain numbers = seconds (sheet). No rounding — tenths matter.
     if (/^\d+\.\d+$/.test(compactNorm)) {
-      return Math.round(parseFloat(compactNorm) * 60);
+      return parseFloat(compactNorm);
     }
 
     if (/^\d+$/.test(compactNorm)) {
@@ -266,13 +279,28 @@
     return li;
   }
 
-  /** Always minutes + seconds, e.g. 0m 45s, 12m 0s */
+  /** For modal / labels: trim float noise, keep up to 3 decimal places (ms / tenths). */
+  function formatSecondsForDisplay(sec) {
+    if (!Number.isFinite(sec)) return "—";
+    const q = Math.round(sec * 1000) / 1000;
+    if (Math.abs(q - Math.round(q)) < 1e-9) return String(Math.round(q));
+    let t = q.toFixed(3);
+    if (t.includes(".")) t = t.replace(/0+$/, "").replace(/\.$/, "");
+    return t;
+  }
+
+  /** Minutes + seconds; fractional seconds preserved (e.g. 0m 2.3s). */
   function formatMinutesSecondsAlways(totalSec) {
     if (!Number.isFinite(totalSec) || totalSec <= 0) return "—";
-    const s = Math.round(totalSec);
-    const m = Math.floor(s / 60);
-    const r = s % 60;
-    return `${m}m ${r}s`;
+    let t = Math.round(totalSec * 1000) / 1000;
+    let m = Math.floor(t / 60);
+    let r = t - m * 60;
+    r = Math.round(r * 1000) / 1000;
+    if (r >= 60) {
+      m += 1;
+      r = 0;
+    }
+    return `${m}m ${formatSecondsForDisplay(r)}s`;
   }
 
   function closeEstimateModal() {
@@ -281,9 +309,8 @@
 
   function openEstimateModal(breakdown) {
     if (!els.estimateModal || !els.estimateModalBody || !breakdown) return;
-    const totalRounded = Math.round(breakdown.totalSeconds);
     els.estimateModalTotal.textContent =
-      `Total: ${formatMinutesSecondsAlways(breakdown.totalSeconds)} (${totalRounded} seconds)`;
+      `Total: ${formatMinutesSecondsAlways(breakdown.totalSeconds)} (${formatSecondsForDisplay(breakdown.totalSeconds)} s)`;
     els.estimateModalBody.innerHTML = "";
     const table = document.createElement("table");
     table.className = "estimate-table";
@@ -318,7 +345,9 @@
       const tdParsed = document.createElement("td");
       tdParsed.className = "num";
       tdParsed.textContent =
-        r.parsedSeconds !== null ? `${r.parsedSeconds}s` : "—";
+        r.parsedSeconds !== null
+          ? `${formatSecondsForDisplay(r.parsedSeconds)} s`
+          : "—";
       tr.appendChild(tdParsed);
 
       const tdDrink = document.createElement("td");
@@ -340,7 +369,7 @@
         );
         const sub = document.createElement("div");
         sub.className = "formula";
-        sub.textContent = `2 × ${r.parsedSeconds}s × ${r.drinkFactor}`;
+        sub.textContent = `2 × ${formatSecondsForDisplay(r.parsedSeconds)} s × ${r.drinkFactor}`;
         tdAdds.appendChild(sub);
       } else {
         tdAdds.textContent = "—";
@@ -434,6 +463,22 @@
       drinkIdx = 3;
     }
 
+    let classYearIdx = findColIndex(labels, [
+      "class",
+      "class year",
+      "year",
+      "grade",
+      "cohort",
+    ]);
+    if (
+      classYearIdx < 0 &&
+      usedPositionalFallback &&
+      drinkIdx === 3 &&
+      table.cols.length >= 5
+    ) {
+      classYearIdx = 4;
+    }
+
     const people = [];
     const rows = table.rows || [];
     rows.forEach((row, i) => {
@@ -441,9 +486,12 @@
       const name = cellText(cells[nameIdx]);
       const image =
         imageIdx >= 0 ? cellText(cells[imageIdx]) : "";
-      const timeRaw = cellText(cells[timeIdx]);
+      const timeRaw = cellTextForTime(cells[timeIdx]);
       const time = timeRaw || "—";
       const drinkRaw = drinkIdx >= 0 ? cellText(cells[drinkIdx]) : "";
+      const classYearRaw =
+        classYearIdx >= 0 ? cellText(cells[classYearIdx]) : "";
+      const classYear = String(classYearRaw || "").trim();
       if (!name) return;
       people.push({
         id: `sheet-row-${i}`,
@@ -451,6 +499,7 @@
         image,
         time,
         drink: drinkRaw,
+        classYear,
       });
     });
     return people;
@@ -534,10 +583,19 @@
     const wrap = node.querySelector(".cast-card__photo-wrap");
     const fallback = node.querySelector(".cast-card__photo-fallback");
     const nameEl = node.querySelector(".cast-card__name");
+    const classRow = node.querySelector(".cast-card__class-row");
+    const classValue = node.querySelector(".cast-card__class-value");
     const drinkBadge = node.querySelector(".cast-card__drink-badge");
     const timeEl = node.querySelector(".cast-card__time-value");
 
     nameEl.textContent = person.name;
+    const classY = String(person.classYear ?? "").trim();
+    if (classY && classRow && classValue) {
+      classValue.textContent = classY;
+      classRow.hidden = false;
+    } else if (classRow) {
+      classRow.hidden = true;
+    }
     const drink = normalizeDrink(person.drink);
     drinkBadge.textContent = drink.label;
     drinkBadge.classList.add("cast-card__drink-badge--" + drink.kind);
@@ -597,7 +655,7 @@
     els.castEmpty.hidden = !emptyAll && !emptyFilter;
     if (emptyAll) {
       els.castEmpty.textContent =
-        "No rows in the sheet yet. Add data (headers: Name, Image, Time, Drink), then click Refresh sheet.";
+        "No rows in the sheet yet. Add data (headers: Name, Image, Time, Drink, optional Class), then click Refresh sheet.";
     } else if (emptyFilter) {
       els.castEmpty.textContent =
         "No one matches this drink filter. Try All or another option.";
