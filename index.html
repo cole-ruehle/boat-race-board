@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Beer Drinking Time | Official Leaderboard</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <header class="uni-header">
+    <div class="uni-header__inner">
+      <div class="uni-brand">
+        <span class="uni-brand__title">Beer Drinking Time</span>
+      </div>
+      <nav class="uni-nav" aria-label="Primary">
+        <a href="#" class="uni-nav__link uni-nav__link--active">Leaderboard</a>
+      </nav>
+      <button type="button" class="btn-sync is-hidden" id="btnSyncSheet" title="Reload data from Google Sheet">
+        Refresh sheet
+      </button>
+      <button type="button" class="btn-edit" id="btnEdit" aria-expanded="false">
+        Staff edit
+      </button>
+    </div>
+  </header>
+
+  <main class="board-main">
+    <section class="title-block" aria-labelledby="page-title">
+      <div class="title-block__poster">
+        <div class="title-block__poster-placeholder" aria-hidden="true">
+          <span class="title-block__poster-initials">BDT</span>
+        </div>
+      </div>
+      <div class="title-block__meta">
+        <h1 id="page-title" class="title-block__name">Beer Drinking Time</h1>
+        <p class="title-block__tagline">Season leaderboard · informal study cohort</p>
+        <div class="title-block__facts">
+          <span class="fact"><strong>Format</strong> timed session</span>
+          <span class="fact"><strong>Updated</strong> <time id="lastUpdated">—</time></span>
+        </div>
+      </div>
+    </section>
+
+    <p class="sheet-banner is-hidden" id="sheetBanner" role="status"></p>
+
+    <section class="cast-section" aria-labelledby="cast-heading">
+      <div class="edit-toolbar is-hidden" id="editToolbar">
+        <button type="button" class="btn btn--primary btn--small" id="addPerson">Add participant</button>
+        <a class="btn btn--ghost btn--small is-hidden" id="openSheetLink" href="#" target="_blank" rel="noopener noreferrer">Open Google Sheet</a>
+        <span class="edit-toolbar__hint" id="editToolbarHint">Changes save in this browser.</span>
+      </div>
+      <div class="section-heading">
+        <h2 id="cast-heading" class="section-heading__title">Top billed</h2>
+        <p class="section-heading__sub">Name · portrait · official time</p>
+      </div>
+      <ul class="cast-list" id="castList"></ul>
+      <p class="cast-empty" id="castEmpty" hidden>No participants yet. Use staff edit to add rows.</p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Beer Drinking Time</p>
+  </footer>
+
+  <!-- Password modal -->
+  <div class="modal-overlay" id="passwordModal" hidden role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal">
+      <h2 id="modalTitle" class="modal__title">Staff authentication</h2>
+      <p class="modal__hint">Enter the edit passphrase to unlock the board.</p>
+      <form id="passwordForm" class="modal__form">
+        <label class="sr-only" for="passwordInput">Passphrase</label>
+        <input type="password" id="passwordInput" class="modal__input" autocomplete="current-password" placeholder="Passphrase" />
+        <p class="modal__error" id="passwordError" hidden>Incorrect passphrase.</p>
+        <div class="modal__actions">
+          <button type="button" class="btn btn--ghost" id="modalCancel">Cancel</button>
+          <button type="submit" class="btn btn--primary">Unlock</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <template id="castRowTemplate">
+    <li class="cast-card">
+      <div class="cast-card__photo-wrap">
+        <img class="cast-card__photo" alt="" />
+        <div class="cast-card__photo-fallback" aria-hidden="true"></div>
+      </div>
+      <div class="cast-card__body">
+        <h3 class="cast-card__name"></h3>
+        <p class="cast-card__role">Participant</p>
+        <div class="cast-card__time-row">
+          <span class="cast-card__time-label">Time</span>
+          <span class="cast-card__time-value time-meter"></span>
+        </div>
+        <div class="cast-card__edit" hidden>
+          <div class="edit-local-only">
+            <label class="edit-label">Name <input type="text" class="edit-name" /></label>
+            <label class="edit-label">Time <input type="text" class="edit-time" placeholder="e.g. 1:32:05 or 45 min" /></label>
+            <button type="button" class="btn btn--small btn--danger cast-remove">Remove</button>
+          </div>
+          <label class="edit-label"
+            >Image URL or data URL
+            <input type="text" class="edit-image" inputmode="text" autocomplete="off" placeholder="https://… or paste from upload" /></label
+          >
+          <label class="edit-label"
+            >Portrait file
+            <input type="file" class="edit-image-file" accept="image/*" /></label
+          >
+          <p class="edit-sheet-hint">
+            Sheet mode: the site only <em>reads</em> the sheet. After upload, paste the copied value into this row’s
+            <strong>Image</strong> cell in Google Sheets (cells hold up to ~50k characters—use a small photo), then
+            <strong>Refresh sheet</strong>.
+          </p>
+        </div>
+      </div>
+    </li>
+  </template>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
