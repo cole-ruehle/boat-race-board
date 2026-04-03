@@ -250,6 +250,82 @@ body {
   color: var(--text-muted);
 }
 
+.drink-filter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+  margin: -0.35rem 0 1rem;
+}
+
+.drink-filter.is-hidden {
+  display: none !important;
+}
+
+.drink-filter__label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-right: 0.15rem;
+}
+
+.drink-filter__btn {
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.35rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.drink-filter__btn:hover {
+  border-color: var(--imdb-gold-dim);
+  color: var(--text);
+}
+
+.drink-filter__btn.is-active {
+  background: var(--bg-header);
+  color: var(--imdb-gold);
+  border-color: var(--imdb-gold-dim);
+}
+
+.cast-tier {
+  list-style: none;
+  grid-column: 1 / -1;
+  margin: 0.35rem 0 0.1rem;
+  padding: 0;
+}
+
+.cast-tier__inner {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.85rem;
+  padding: 0.35rem 0 0.4rem;
+  border-bottom: 2px solid var(--uni-crimson);
+}
+
+.cast-tier__title {
+  font-family: var(--font-serif);
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--text);
+}
+
+.cast-tier__sub {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
 .cast-list {
   list-style: none;
   margin: 0;
@@ -264,6 +340,7 @@ body {
 }
 
 .cast-card {
+  position: relative;
   display: grid;
   grid-template-columns: 88px 1fr;
   gap: 1rem;
@@ -272,6 +349,32 @@ body {
   border-radius: var(--radius);
   padding: 1rem;
   box-shadow: var(--shadow);
+}
+
+.cast-card--turn {
+  border-color: var(--imdb-gold-dim);
+  box-shadow:
+    0 0 0 2px rgba(245, 197, 24, 0.45),
+    var(--shadow);
+  background: linear-gradient(145deg, #fffbeb 0%, var(--bg-card) 50%);
+}
+
+.cast-card--turn .cast-card__body {
+  padding-right: 4.25rem;
+}
+
+.cast-card__turn-badge {
+  position: absolute;
+  top: 0.55rem;
+  right: 0.55rem;
+  z-index: 2;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  padding: 0.28rem 0.5rem;
+  border-radius: 4px;
+  background: var(--imdb-gold);
+  color: #121212;
 }
 
 .cast-card__photo-wrap {

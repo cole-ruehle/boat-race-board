@@ -49,13 +49,16 @@
   }
 
   let state = buildInitialState();
+  let drinkFilter = "all";
 
   const els = {
     castList: document.getElementById("castList"),
     castEmpty: document.getElementById("castEmpty"),
     lastUpdated: document.getElementById("lastUpdated"),
     btnSyncSheet: document.getElementById("btnSyncSheet"),
+    drinkFilterBar: document.getElementById("drinkFilter"),
     template: document.getElementById("castRowTemplate"),
+    tierTemplate: document.getElementById("castTierTemplate"),
     sheetBanner: document.getElementById("sheetBanner"),
   };
 
@@ -175,8 +178,14 @@
       return a * 60 + b;
     }
 
-    if (/^\d+(\.\d+)?$/.test(compact)) {
-      return Math.round(parseFloat(compact));
+    const compactNorm = compact.replace(",", ".");
+    // Decimal = decimal minutes (e.g. 2.5 → 2 min 30 sec). Matches Sheets numeric cells like 2.5.
+    if (/^\d+\.\d+$/.test(compactNorm)) {
+      return Math.round(parseFloat(compactNorm) * 60);
+    }
+
+    if (/^\d+$/.test(compactNorm)) {
+      return parseInt(compactNorm, 10);
     }
 
     return null;
@@ -193,6 +202,32 @@
         sensitivity: "base",
       });
     });
+  }
+
+  function drinkKindForFilter(person) {
+    return normalizeDrink(person.drink).kind;
+  }
+
+  function getFilteredSortedPeople() {
+    const sorted = sortPeopleByTime(state.people);
+    if (drinkFilter === "all") return sorted;
+    return sorted.filter((p) => {
+      const k = drinkKindForFilter(p);
+      if (drinkFilter === "water") return k === "water";
+      if (drinkFilter === "beer") return k === "beer";
+      if (drinkFilter === "other") return k === "other" || k === "none";
+      return true;
+    });
+  }
+
+  function createTierRow(title, subtitle) {
+    const node = els.tierTemplate.content.cloneNode(true);
+    const li = node.querySelector(".cast-tier");
+    li.querySelector(".cast-tier__title").textContent = title;
+    const sub = li.querySelector(".cast-tier__sub");
+    sub.textContent = subtitle || "";
+    sub.hidden = !subtitle;
+    return li;
   }
 
   function gvizToPeople(resp) {
@@ -312,10 +347,17 @@
     wrap.classList.remove("is-empty");
   }
 
-  function renderPerson(person) {
+  function renderPerson(person, options) {
+    const { isTurn = false } = options || {};
     const node = els.template.content.cloneNode(true);
     const li = node.querySelector(".cast-card");
     li.dataset.id = person.id;
+    if (isTurn) {
+      li.classList.add("cast-card--turn");
+    }
+
+    const turnBadge = node.querySelector(".cast-card__turn-badge");
+    turnBadge.hidden = !isTurn;
 
     const img = node.querySelector(".cast-card__photo");
     const wrap = node.querySelector(".cast-card__photo-wrap");
@@ -364,6 +406,7 @@
       els.castEmpty.textContent =
         "No spreadsheet configured. Set sheetId in config.js (see SETUP.md), deploy, and reload.";
       els.btnSyncSheet.classList.add("is-hidden");
+      els.drinkFilterBar.classList.add("is-hidden");
       els.lastUpdated.textContent = "—";
       showSheetBanner(
         "Add your Google Sheet id to config.js and ensure the sheet is shared as “Anyone with the link can view.”",
@@ -373,19 +416,52 @@
     }
 
     els.btnSyncSheet.classList.remove("is-hidden");
+    els.drinkFilterBar.classList.remove("is-hidden");
 
-    const empty = state.people.length === 0;
-    els.castEmpty.hidden = !empty;
-    if (empty) {
+    const list = getFilteredSortedPeople();
+    const emptyAll = state.people.length === 0;
+    const emptyFilter = !emptyAll && list.length === 0;
+
+    els.castEmpty.hidden = !emptyAll && !emptyFilter;
+    if (emptyAll) {
       els.castEmpty.textContent =
         "No rows in the sheet yet. Add data (headers: Name, Image, Time, Drink), then click Refresh sheet.";
+    } else if (emptyFilter) {
+      els.castEmpty.textContent =
+        "No one matches this drink filter. Try All or another option.";
     }
 
-    for (const p of sortPeopleByTime(state.people)) {
-      els.castList.appendChild(renderPerson(p));
-    }
+    const turnPerson =
+      list.find((p) => parseTimeToSeconds(p.time) !== null) || null;
+    const turnId = turnPerson ? turnPerson.id : null;
+
+    const TOP_N = 8;
+    list.forEach((p, i) => {
+      if (i === 0) {
+        els.castList.appendChild(
+          createTierRow("1 v", "Top " + TOP_N),
+        );
+      }
+      if (i === TOP_N && list.length > TOP_N) {
+        els.castList.appendChild(createTierRow("The field", "Everyone else"));
+      }
+      els.castList.appendChild(
+        renderPerson(p, { isTurn: turnId !== null && p.id === turnId }),
+      );
+    });
+
     refreshUpdatedLabel();
   }
+
+  els.drinkFilterBar.addEventListener("click", (e) => {
+    const btn = e.target.closest(".drink-filter__btn");
+    if (!btn || !btn.dataset.filter) return;
+    drinkFilter = btn.dataset.filter;
+    els.drinkFilterBar.querySelectorAll(".drink-filter__btn").forEach((b) => {
+      b.classList.toggle("is-active", b.dataset.filter === drinkFilter);
+    });
+    renderAll();
+  });
 
   els.btnSyncSheet.addEventListener("click", () => {
     syncFromSheet().finally(() => renderAll());

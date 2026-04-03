@@ -61,7 +61,7 @@ The site **only displays** rows from your spreadsheet; all editing happens in **
 
 - **Name** — display name  
 - **Image** — `https://…` link to a photo, or a short JPEG **data URL** pasted into the cell (cells are limited to about 50,000 characters)  
-- **Time** — any text (e.g. `1:12`, `45 min`); used for sorting (shortest first)  
+- **Time** — any text (e.g. `1:12`, `45 min`); used for sorting (shortest first). **Decimals = minutes:** `2.5` means 2 minutes 30 seconds (also how Google Sheets often stores a number like `2.5`). Plain integers like `45` or `120` are treated as **seconds**.  
 - **Drink** — column header **Drink**, **Beverage**, or **Liquid**. Put **water** or **beer** (wording is flexible: e.g. `IPA`, `lager`, `H2O` still classify). Leave empty if unknown.
 
 If you use the default column order **Name · Image · Time · Drink** with no matching header names, the fourth column is read as drink.

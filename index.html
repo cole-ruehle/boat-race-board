@@ -48,6 +48,13 @@
         <h2 id="cast-heading" class="section-heading__title">Leaderboard</h2>
         <p class="section-heading__sub">Name · drink · portrait · time (from Google Sheet)</p>
       </div>
+      <div class="drink-filter is-hidden" id="drinkFilter" role="group" aria-label="Filter by drink">
+        <span class="drink-filter__label">Show</span>
+        <button type="button" class="drink-filter__btn is-active" data-filter="all">All</button>
+        <button type="button" class="drink-filter__btn" data-filter="water">Water</button>
+        <button type="button" class="drink-filter__btn" data-filter="beer">Beer</button>
+        <button type="button" class="drink-filter__btn" data-filter="other">Other</button>
+      </div>
       <ul class="cast-list" id="castList"></ul>
       <p class="cast-empty" id="castEmpty" hidden>No rows yet.</p>
     </section>
@@ -57,8 +64,18 @@
     <p>Beer Drinking Time</p>
   </footer>
 
+  <template id="castTierTemplate">
+    <li class="cast-tier">
+      <div class="cast-tier__inner">
+        <span class="cast-tier__title"></span>
+        <span class="cast-tier__sub"></span>
+      </div>
+    </li>
+  </template>
+
   <template id="castRowTemplate">
     <li class="cast-card">
+      <span class="cast-card__turn-badge" hidden>TURN</span>
       <div class="cast-card__photo-wrap">
         <img class="cast-card__photo" alt="" />
         <div class="cast-card__photo-fallback" aria-hidden="true"></div>
