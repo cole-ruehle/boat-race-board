@@ -133,6 +133,67 @@
     return "";
   }
 
+  /** @returns {number|null} seconds for sorting, or null if no comparable time (sorted last) */
+  function parseTimeToSeconds(raw) {
+    const s = String(raw ?? "").trim();
+    if (!s) return null;
+
+    const compact = s.replace(/\s/g, "");
+    if (
+      /^n\/a$/i.test(compact) ||
+      /^tbd$/i.test(compact) ||
+      /^[\-–—\u2013\u2014?]+$/u.test(compact)
+    ) {
+      return null;
+    }
+
+    const minWord = compact.match(/^(\d+(?:\.\d+)?)(?:min(?:ute)?s?|m)$/i);
+    if (minWord) {
+      return Math.round(parseFloat(minWord[1]) * 60);
+    }
+
+    const secWord = compact.match(/^(\d+(?:\.\d+)?)(?:sec(?:ond)?s?|s)$/i);
+    if (secWord) {
+      return Math.round(parseFloat(secWord[1]));
+    }
+
+    const hms = compact.match(/^(\d+):(\d{1,2}):(\d{1,2})$/);
+    if (hms) {
+      const h = parseInt(hms[1], 10);
+      const m = parseInt(hms[2], 10);
+      const sec = parseInt(hms[3], 10);
+      if (m >= 60 || sec >= 60 || Number.isNaN(h + m + sec)) return null;
+      return h * 3600 + m * 60 + sec;
+    }
+
+    const ms = compact.match(/^(\d+):(\d{1,2})$/);
+    if (ms) {
+      const a = parseInt(ms[1], 10);
+      const b = parseInt(ms[2], 10);
+      if (b >= 60 || Number.isNaN(a + b)) return null;
+      return a * 60 + b;
+    }
+
+    if (/^\d+(\.\d+)?$/.test(compact)) {
+      return Math.round(parseFloat(compact));
+    }
+
+    return null;
+  }
+
+  function sortPeopleByTime(people) {
+    return [...people].sort((a, b) => {
+      const sa = parseTimeToSeconds(a.time);
+      const sb = parseTimeToSeconds(b.time);
+      const ra = sa === null ? Number.POSITIVE_INFINITY : sa;
+      const rb = sb === null ? Number.POSITIVE_INFINITY : sb;
+      if (ra !== rb) return ra - rb;
+      return String(a.name).localeCompare(String(b.name), undefined, {
+        sensitivity: "base",
+      });
+    });
+  }
+
   function gvizToPeople(resp) {
     const table = resp.table;
     if (!table || !Array.isArray(table.cols)) return [];
@@ -282,7 +343,7 @@
         "No rows in the sheet yet. Add data (headers: Name, Image, Time), then click Refresh sheet.";
     }
 
-    for (const p of state.people) {
+    for (const p of sortPeopleByTime(state.people)) {
       els.castList.appendChild(renderPerson(p));
     }
     refreshUpdatedLabel();
