@@ -21,9 +21,6 @@
       <button type="button" class="btn-sync is-hidden" id="btnSyncSheet" title="Reload data from Google Sheet">
         Refresh sheet
       </button>
-      <button type="button" class="btn-edit" id="btnEdit" aria-expanded="false">
-        Staff edit
-      </button>
     </div>
   </header>
 
@@ -47,40 +44,18 @@
     <p class="sheet-banner is-hidden" id="sheetBanner" role="status"></p>
 
     <section class="cast-section" aria-labelledby="cast-heading">
-      <div class="edit-toolbar is-hidden" id="editToolbar">
-        <button type="button" class="btn btn--primary btn--small" id="addPerson">Add participant</button>
-        <a class="btn btn--ghost btn--small is-hidden" id="openSheetLink" href="#" target="_blank" rel="noopener noreferrer">Open Google Sheet</a>
-        <span class="edit-toolbar__hint" id="editToolbarHint">Changes save in this browser.</span>
-      </div>
       <div class="section-heading">
-        <h2 id="cast-heading" class="section-heading__title">Top billed</h2>
-        <p class="section-heading__sub">Name · portrait · official time</p>
+        <h2 id="cast-heading" class="section-heading__title">Leaderboard</h2>
+        <p class="section-heading__sub">Name · portrait · time (from Google Sheet)</p>
       </div>
       <ul class="cast-list" id="castList"></ul>
-      <p class="cast-empty" id="castEmpty" hidden>No participants yet. Use staff edit to add rows.</p>
+      <p class="cast-empty" id="castEmpty" hidden>No rows yet.</p>
     </section>
   </main>
 
   <footer class="site-footer">
     <p>Beer Drinking Time</p>
   </footer>
-
-  <!-- Password modal -->
-  <div class="modal-overlay" id="passwordModal" hidden role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-    <div class="modal">
-      <h2 id="modalTitle" class="modal__title">Staff authentication</h2>
-      <p class="modal__hint">Enter the edit passphrase to unlock the board.</p>
-      <form id="passwordForm" class="modal__form">
-        <label class="sr-only" for="passwordInput">Passphrase</label>
-        <input type="password" id="passwordInput" class="modal__input" autocomplete="current-password" placeholder="Passphrase" />
-        <p class="modal__error" id="passwordError" hidden>Incorrect passphrase.</p>
-        <div class="modal__actions">
-          <button type="button" class="btn btn--ghost" id="modalCancel">Cancel</button>
-          <button type="submit" class="btn btn--primary">Unlock</button>
-        </div>
-      </form>
-    </div>
-  </div>
 
   <template id="castRowTemplate">
     <li class="cast-card">
@@ -94,26 +69,6 @@
         <div class="cast-card__time-row">
           <span class="cast-card__time-label">Time</span>
           <span class="cast-card__time-value time-meter"></span>
-        </div>
-        <div class="cast-card__edit" hidden>
-          <div class="edit-local-only">
-            <label class="edit-label">Name <input type="text" class="edit-name" /></label>
-            <label class="edit-label">Time <input type="text" class="edit-time" placeholder="e.g. 1:32:05 or 45 min" /></label>
-            <button type="button" class="btn btn--small btn--danger cast-remove">Remove</button>
-          </div>
-          <label class="edit-label"
-            >Image URL or data URL
-            <input type="text" class="edit-image" inputmode="text" autocomplete="off" placeholder="https://… or paste from upload" /></label
-          >
-          <label class="edit-label"
-            >Portrait file
-            <input type="file" class="edit-image-file" accept="image/*" /></label
-          >
-          <p class="edit-sheet-hint">
-            Sheet mode: the site only <em>reads</em> the sheet. After upload, paste the copied value into this row’s
-            <strong>Image</strong> cell in Google Sheets (cells hold up to ~50k characters—use a small photo), then
-            <strong>Refresh sheet</strong>.
-          </p>
         </div>
       </div>
     </li>

@@ -47,71 +47,53 @@ Optional: if you use a **private** repo, GitHub still serves Pages on free accou
 
 No GitHub secrets, Actions, or build step are required—static files only.
 
-## Google Sheet (optional, still no API keys)
+## Google Sheet (required, no API keys)
 
-The site can **read** rows from a spreadsheet using Google’s public visualization endpoint. **Editing still happens in Google Sheets** (or you can leave `sheetId` empty and use only the in-browser editor + local storage).
+The site **only displays** rows from your spreadsheet; all editing happens in **Google Sheets**.
 
 ### 1. Create the sheet
 
-- Row **1** must be headers. Use exactly these labels (any column order is fine):
+- Row **1** must be headers (any column order is fine):
 
   | Name | Image | Time |
   |------|-------|------|
   | Jordan Lee | https://example.com/photo.jpg | 0:45 |
 
 - **Name** — display name  
-- **Image** — `https://…` link to a photo, **or** a short JPEG data URL pasted from the board’s **Portrait file** upload (see below)  
-- **Time** — any text you like (e.g. `1:12`, `45 min`)
+- **Image** — `https://…` link to a photo, or a short JPEG **data URL** pasted into the cell (cells are limited to about 50,000 characters)  
+- **Time** — any text (e.g. `1:12`, `45 min`)
 
 Add one data row per person. Extra columns are ignored.
 
-### Several people editing times
+### Several people editing
 
-Use **one** Google Sheet and add everyone who should change scores as **Editors** (Share → invite their Google accounts). The website does **not** push live updates; it only **reads** the sheet when someone opens the page or clicks **Refresh sheet**. So:
+Use **one** sheet and add **Editors** via Share → invite Google accounts. The page only **reads** the sheet when it loads or when someone clicks **Refresh sheet**:
 
-- Editors change cells in Google Sheets (they stay logged into Google).
-- Viewers open your GitHub Pages site **without** any Google login; the sheet must stay **Anyone with the link can view** (or “Anyone on the internet”) so that read works.
-- After an editor saves the sheet, others see new times after **Refresh sheet** or a normal reload.
-
-That is the “unauthenticated” part: **anonymous read** from the static site, not anonymous **write** (writes always happen in Google Sheets with normal Google permissions).
-
-### Images without an image host
-
-- **Easiest:** put an `https://` URL in the **Image** column (any normal image link).
-- **Upload from the board (sheet mode):** unlock **Staff edit**, choose **Portrait file** for a row. The site compresses the photo and copies a **data URL** to your clipboard (or leaves it in the Image field). **Paste that into the Image cell** for that person in Google Sheets, save the sheet, then click **Refresh sheet**. Cells are limited to about **50,000 characters**, so very large originals may fail until you use a smaller file or a URL instead.
-- **Local-only mode** (no `sheetId` in `config.js`): uploads save in this browser’s storage with no Google involved.
+- Editors change the sheet while signed into Google.
+- Viewers use your site **without** logging in; the sheet must allow **Anyone with the link can view** (or broader) so the page can read it.
 
 ### 2. Share the sheet
 
-**Share → General access → Anyone with the link → Viewer** (or Editor for people who can change the board).  
-Without this, the public page cannot read the sheet.
+**Share → General access → Anyone with the link → Viewer** (minimum for the public page to load). Give **Editor** to people who should change the board.
 
 ### 3. Point `config.js` at the sheet
 
-1. Open the spreadsheet. Copy the **spreadsheet ID** from the URL:
-
+1. Copy the spreadsheet **id** from the URL:  
    `https://docs.google.com/spreadsheets/d/`**`1abc...xyz`**`/edit`
+2. For the correct **tab**, note **gid** in the URL (`gid=…`; first tab is often `0`).
 
-2. Open the **tab** that has your table. Copy the **gid** from the URL if present (`gid=123456789`). The first tab often uses `gid=0`.
+```js
+window.BDT_CONFIG = {
+  sheetId: "1abc...xyz",
+  gid: "0",
+};
+```
 
-3. Edit `config.js` in this repo:
+3. Commit and push. Use **Refresh sheet** on the site to pull the latest.
 
-   ```js
-   window.BDT_CONFIG = {
-     sheetId: "1abc...xyz",
-     gid: "0",
-   };
-   ```
+If `sheetId` is missing, the page shows a configuration message instead of a leaderboard.
 
-4. Commit and push. After GitHub Pages rebuilds, use **Refresh sheet** on the site (or reload the page).
+### Limits
 
-### Limits and expectations
-
-- **Read-only from the site:** the HTML app does not call the Sheets API or push rows automatically. You update cells in Google Drive (or paste image data from the upload helper), then refresh the board.
-- **No API keys:** only a public spreadsheet id in `config.js` and a sheet that allows link-based viewing.
-- **`sheetId` set:** names, times, and images come from the sheet; password unlocks staff tools (open sheet, image upload → clipboard, refresh).
-- **Automatic write-back** from the website (no copy-paste) would need Google Apps Script or the Sheets API with credentials—not included here.
-
-## Passphrase
-
-Staff unlock uses the passphrase baked into `app.js` (`407mem`). Anyone can see it in the source; use it for casual friends-only gating, not real security.
+- **Display-only:** the static site does not write to Google. Update the sheet in Drive, then refresh.
+- **No API keys:** public spreadsheet id + link-based viewing only.

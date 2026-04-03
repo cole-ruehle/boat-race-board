@@ -117,30 +117,8 @@ body {
   color: var(--imdb-gold);
 }
 
-.btn-sync.is-hidden,
-.btn-edit.is-hidden {
+.btn-sync.is-hidden {
   display: none !important;
-}
-
-.btn-edit {
-  font-family: var(--font-ui);
-  font-size: 0.8rem;
-  font-weight: 600;
-  padding: 0.4rem 0.85rem;
-  border-radius: var(--radius);
-  border: 1px solid var(--imdb-gold-dim);
-  background: transparent;
-  color: var(--imdb-gold);
-  cursor: pointer;
-}
-
-.btn-edit:hover {
-  background: rgba(245, 197, 24, 0.12);
-}
-
-.btn-edit.is-unlocked {
-  border-color: #4ade80;
-  color: #86efac;
 }
 
 /* Hero + main column */
@@ -191,7 +169,7 @@ body {
     order: 3;
   }
 
-  .btn-edit {
+  .btn-sync {
     margin-left: auto;
   }
 }
@@ -374,36 +352,6 @@ body {
   letter-spacing: 0.02em;
 }
 
-.cast-card__edit {
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px dashed var(--border);
-  display: flex;
-  flex-direction: column;
-  gap: 0.65rem;
-}
-
-.edit-label {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--text-muted);
-}
-
-.edit-label input {
-  font: inherit;
-  padding: 0.45rem 0.55rem;
-  border: 1px solid var(--border);
-  border-radius: 4px;
-}
-
-.cast-remove {
-  align-self: flex-start;
-  margin-top: 0.25rem;
-}
-
 .site-footer {
   margin-top: auto;
   padding: 1.25rem;
@@ -414,155 +362,3 @@ body {
   border-top: 1px solid var(--border);
 }
 
-/* Buttons */
-.btn {
-  font-family: var(--font-ui);
-  font-size: 0.875rem;
-  font-weight: 600;
-  padding: 0.5rem 1rem;
-  border-radius: var(--radius);
-  border: none;
-  cursor: pointer;
-}
-
-.btn--primary {
-  background: var(--imdb-gold);
-  color: #121212;
-}
-
-.btn--primary:hover {
-  filter: brightness(1.05);
-}
-
-.btn--ghost {
-  background: transparent;
-  color: var(--text-muted);
-  border: 1px solid var(--border);
-}
-
-.btn--ghost:hover {
-  color: var(--text);
-}
-
-.btn--small {
-  font-size: 0.75rem;
-  padding: 0.35rem 0.65rem;
-}
-
-.btn--danger {
-  background: #fef2f2;
-  color: #b91c1c;
-  border: 1px solid #fecaca;
-}
-
-.btn--danger:hover {
-  background: #fee2e2;
-}
-
-/* Modal */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.55);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-  z-index: 1000;
-}
-
-.modal-overlay[hidden] {
-  display: none !important;
-}
-
-.modal {
-  background: var(--bg-card);
-  border-radius: 8px;
-  padding: 1.5rem;
-  max-width: 400px;
-  width: 100%;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
-  border-top: 4px solid var(--imdb-gold);
-}
-
-.modal__title {
-  margin: 0 0 0.5rem;
-  font-size: 1.2rem;
-}
-
-.modal__hint {
-  margin: 0 0 1rem;
-  font-size: 0.9rem;
-  color: var(--text-muted);
-}
-
-.modal__input {
-  width: 100%;
-  padding: 0.6rem 0.75rem;
-  font: inherit;
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  margin-bottom: 0.5rem;
-}
-
-.modal__error {
-  color: #b91c1c;
-  font-size: 0.8rem;
-  margin: 0 0 0.75rem;
-}
-
-.modal__actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.5rem;
-  margin-top: 1rem;
-}
-
-body.sheet-mode #addPerson {
-  display: none;
-}
-
-body.edit-mode .cast-card__edit {
-  display: flex !important;
-}
-
-body.sheet-mode .edit-local-only {
-  display: none;
-}
-
-body:not(.sheet-mode) .edit-sheet-hint {
-  display: none;
-}
-
-.edit-sheet-hint {
-  margin: 0;
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  line-height: 1.4;
-}
-
-.edit-image-file {
-  font: inherit;
-  font-size: 0.8rem;
-}
-
-body.edit-mode:not(.sheet-mode) .cast-card__time-value {
-  border: 1px dashed var(--imdb-gold-dim);
-}
-
-.edit-toolbar {
-  margin-bottom: 1rem;
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-  align-items: center;
-}
-
-.edit-toolbar.is-hidden {
-  display: none;
-}
-
-.edit-toolbar__hint {
-  font-size: 0.85rem;
-  color: var(--text-muted);
-}

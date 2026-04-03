@@ -1,6 +1,5 @@
-// Optional: connect the board to a Google Sheet (read-only from the web app).
-// No API keys or secrets are required. The sheet must be shared as
-// "Anyone with the link" → Viewer (or broader). See SETUP.md.
+// The site only displays data from this Google Sheet (read-only in the browser).
+// Share the sheet as "Anyone with the link" → Viewer (or broader). See SETUP.md.
 window.BDT_CONFIG = {
   // Spreadsheet ID from the URL: docs.google.com/spreadsheets/d/THIS_PART/edit
   sheetId: "10chsEOPVJROgDatwGH8_gJwxj17leJXnPVrN9TBZGVE",
