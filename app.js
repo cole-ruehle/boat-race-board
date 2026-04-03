@@ -20,6 +20,7 @@
           name: String(p.name ?? "Participant"),
           image: String(p.image ?? ""),
           time: String(p.time ?? "—"),
+          drink: String(p.drink ?? ""),
         })),
         updatedAt: data.updatedAt || Date.now(),
       };
@@ -205,19 +206,27 @@
     let nameIdx = findColIndex(labels, ["name"]);
     let imageIdx = findColIndex(labels, ["image", "photo", "picture", "avatar"]);
     let timeIdx = findColIndex(labels, ["time"]);
+    let usedPositionalFallback = false;
 
     if (nameIdx < 0 || timeIdx < 0) {
       if (table.cols.length >= 3) {
         nameIdx = 0;
         imageIdx = 1;
         timeIdx = 2;
+        usedPositionalFallback = true;
       } else if (table.cols.length >= 2) {
         nameIdx = 0;
         imageIdx = -1;
         timeIdx = 1;
+        usedPositionalFallback = true;
       } else {
         return [];
       }
+    }
+
+    let drinkIdx = findColIndex(labels, ["drink", "beverage", "liquid"]);
+    if (drinkIdx < 0 && usedPositionalFallback && table.cols.length >= 4) {
+      drinkIdx = 3;
     }
 
     const people = [];
@@ -229,12 +238,14 @@
         imageIdx >= 0 ? cellText(cells[imageIdx]) : "";
       const timeRaw = cellText(cells[timeIdx]);
       const time = timeRaw || "—";
+      const drinkRaw = drinkIdx >= 0 ? cellText(cells[drinkIdx]) : "";
       if (!name) return;
       people.push({
         id: `sheet-row-${i}`,
         name,
         image,
         time,
+        drink: drinkRaw,
       });
     });
     return people;
@@ -268,6 +279,29 @@
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
   }
 
+  /** @returns {{ kind: string, label: string }} */
+  function normalizeDrink(raw) {
+    const s = String(raw ?? "").trim();
+    if (!s) {
+      return { kind: "none", label: "—" };
+    }
+    const lower = s.toLowerCase();
+    if (/^[\-–—\u2013\u2014?]+$/u.test(lower) || /^n\/a$/i.test(lower)) {
+      return { kind: "none", label: "—" };
+    }
+    if (/\bwater\b|h2o|\bagua\b/.test(lower)) {
+      return { kind: "water", label: "Water" };
+    }
+    if (
+      /\bbeer\b|\bbrew\b|\blager\b|\bale\b|\bipa\b|\bstout\b|\bpilsner\b|\bpils\b/.test(
+        lower,
+      )
+    ) {
+      return { kind: "beer", label: "Beer" };
+    }
+    return { kind: "other", label: s };
+  }
+
   function syncPhotoWrap(img, wrap, fallbackEl, displayName) {
     const src = img.getAttribute("src") ? img.getAttribute("src").trim() : "";
     fallbackEl.textContent = initials(displayName());
@@ -287,9 +321,13 @@
     const wrap = node.querySelector(".cast-card__photo-wrap");
     const fallback = node.querySelector(".cast-card__photo-fallback");
     const nameEl = node.querySelector(".cast-card__name");
+    const drinkBadge = node.querySelector(".cast-card__drink-badge");
     const timeEl = node.querySelector(".cast-card__time-value");
 
     nameEl.textContent = person.name;
+    const drink = normalizeDrink(person.drink);
+    drinkBadge.textContent = drink.label;
+    drinkBadge.classList.add("cast-card__drink-badge--" + drink.kind);
     timeEl.textContent = person.time;
     img.alt = `Photo of ${person.name}`;
     if (person.image) img.src = person.image;
@@ -340,7 +378,7 @@
     els.castEmpty.hidden = !empty;
     if (empty) {
       els.castEmpty.textContent =
-        "No rows in the sheet yet. Add data (headers: Name, Image, Time), then click Refresh sheet.";
+        "No rows in the sheet yet. Add data (headers: Name, Image, Time, Drink), then click Refresh sheet.";
     }
 
     for (const p of sortPeopleByTime(state.people)) {

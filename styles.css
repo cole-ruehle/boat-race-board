@@ -315,28 +315,61 @@ body {
 .cast-card__name {
   font-size: 1.1rem;
   font-weight: 700;
-  margin: 0 0 0.15rem;
+  margin: 0 0 0.5rem;
 }
 
-.cast-card__role {
-  margin: 0 0 0.6rem;
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
+.cast-card__drink-row,
 .cast-card__time-row {
   display: flex;
   align-items: center;
   gap: 0.75rem;
 }
 
+.cast-card__drink-row {
+  margin-bottom: 0.5rem;
+}
+
+.cast-card__stat-label,
 .cast-card__time-label {
   font-size: 0.75rem;
   font-weight: 600;
   color: var(--text-muted);
   text-transform: uppercase;
+}
+
+.cast-card__drink-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.55rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.cast-card__drink-badge--water {
+  background: #dbeafe;
+  color: #1e40af;
+  border: 1px solid #93c5fd;
+}
+
+.cast-card__drink-badge--beer {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fcd34d;
+}
+
+.cast-card__drink-badge--other {
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid var(--border);
+}
+
+.cast-card__drink-badge--none {
+  background: transparent;
+  color: var(--text-muted);
+  font-weight: 600;
+  border: 1px dashed var(--border);
 }
 
 .time-meter {

@@ -55,15 +55,18 @@ The site **only displays** rows from your spreadsheet; all editing happens in **
 
 - Row **1** must be headers (any column order is fine):
 
-  | Name | Image | Time |
-  |------|-------|------|
-  | Jordan Lee | https://example.com/photo.jpg | 0:45 |
+  | Name | Image | Time | Drink |
+  |------|-------|------|-------|
+  | Jordan Lee | https://example.com/photo.jpg | 0:45 | beer |
 
 - **Name** — display name  
 - **Image** — `https://…` link to a photo, or a short JPEG **data URL** pasted into the cell (cells are limited to about 50,000 characters)  
-- **Time** — any text (e.g. `1:12`, `45 min`)
+- **Time** — any text (e.g. `1:12`, `45 min`); used for sorting (shortest first)  
+- **Drink** — column header **Drink**, **Beverage**, or **Liquid**. Put **water** or **beer** (wording is flexible: e.g. `IPA`, `lager`, `H2O` still classify). Leave empty if unknown.
 
-Add one data row per person. Extra columns are ignored.
+If you use the default column order **Name · Image · Time · Drink** with no matching header names, the fourth column is read as drink.
+
+Add one data row per person. Other columns are ignored unless they are the only unnamed extra column (prefer using a **Drink** header).
 
 ### Several people editing
 

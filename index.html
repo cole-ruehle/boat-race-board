@@ -46,7 +46,7 @@
     <section class="cast-section" aria-labelledby="cast-heading">
       <div class="section-heading">
         <h2 id="cast-heading" class="section-heading__title">Leaderboard</h2>
-        <p class="section-heading__sub">Name · portrait · time (from Google Sheet)</p>
+        <p class="section-heading__sub">Name · drink · portrait · time (from Google Sheet)</p>
       </div>
       <ul class="cast-list" id="castList"></ul>
       <p class="cast-empty" id="castEmpty" hidden>No rows yet.</p>
@@ -65,7 +65,10 @@
       </div>
       <div class="cast-card__body">
         <h3 class="cast-card__name"></h3>
-        <p class="cast-card__role">Participant</p>
+        <div class="cast-card__drink-row">
+          <span class="cast-card__stat-label">Drink</span>
+          <span class="cast-card__drink-badge"></span>
+        </div>
         <div class="cast-card__time-row">
           <span class="cast-card__time-label">Time</span>
           <span class="cast-card__time-value time-meter"></span>
