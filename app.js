@@ -61,6 +61,10 @@
     template: document.getElementById("castRowTemplate"),
     tierTemplate: document.getElementById("castTierTemplate"),
     sheetBanner: document.getElementById("sheetBanner"),
+    estimateModal: document.getElementById("estimateModal"),
+    estimateModalBody: document.getElementById("estimateModalBody"),
+    estimateModalTotal: document.getElementById("estimateModalTotal"),
+    estimateModalClose: document.getElementById("estimateModalClose"),
   };
 
   function showSheetBanner(message, isError) {
@@ -238,14 +242,162 @@
     });
   }
 
-  function createTierRow(title, subtitle) {
+  function createTierRow(title, subtitle, estimateInfo) {
     const node = els.tierTemplate.content.cloneNode(true);
     const li = node.querySelector(".cast-tier");
     li.querySelector(".cast-tier__title").textContent = title;
     const sub = li.querySelector(".cast-tier__sub");
     sub.textContent = subtitle || "";
     sub.hidden = !subtitle;
+    const est = li.querySelector(".cast-tier__estimate");
+    const line = estimateInfo && estimateInfo.text ? estimateInfo.text : "";
+    const breakdown = estimateInfo && estimateInfo.breakdown;
+    est.textContent = line;
+    est.classList.toggle("is-hidden", !line);
+    if (line && breakdown) {
+      est.setAttribute(
+        "aria-label",
+        "Show full breakdown for 1 v combined estimate in minutes and seconds",
+      );
+      est.addEventListener("click", () => openEstimateModal(breakdown));
+    } else {
+      est.removeAttribute("aria-label");
+    }
     return li;
+  }
+
+  /** Always minutes + seconds, e.g. 0m 45s, 12m 0s */
+  function formatMinutesSecondsAlways(totalSec) {
+    if (!Number.isFinite(totalSec) || totalSec <= 0) return "—";
+    const s = Math.round(totalSec);
+    const m = Math.floor(s / 60);
+    const r = s % 60;
+    return `${m}m ${r}s`;
+  }
+
+  function closeEstimateModal() {
+    if (els.estimateModal) els.estimateModal.hidden = true;
+  }
+
+  function openEstimateModal(breakdown) {
+    if (!els.estimateModal || !els.estimateModalBody || !breakdown) return;
+    const totalRounded = Math.round(breakdown.totalSeconds);
+    els.estimateModalTotal.textContent =
+      `Total: ${formatMinutesSecondsAlways(breakdown.totalSeconds)} (${totalRounded} seconds)`;
+    els.estimateModalBody.innerHTML = "";
+    const table = document.createElement("table");
+    table.className = "estimate-table";
+    const thead = document.createElement("thead");
+    const hr = document.createElement("tr");
+    ["#", "Name", "Sheet time", "Parsed", "Drink", "Factor", "Adds"].forEach(
+      (label) => {
+        const th = document.createElement("th");
+        th.textContent = label;
+        hr.appendChild(th);
+      },
+    );
+    thead.appendChild(hr);
+    table.appendChild(thead);
+    const tb = document.createElement("tbody");
+    for (const r of breakdown.rows) {
+      const tr = document.createElement("tr");
+      if (r.skipped) tr.classList.add("row--skipped");
+
+      const tdRank = document.createElement("td");
+      tdRank.textContent = String(r.rank);
+      tr.appendChild(tdRank);
+
+      const tdName = document.createElement("td");
+      tdName.textContent = r.name;
+      tr.appendChild(tdName);
+
+      const tdSheet = document.createElement("td");
+      tdSheet.textContent = r.timeSheet;
+      tr.appendChild(tdSheet);
+
+      const tdParsed = document.createElement("td");
+      tdParsed.className = "num";
+      tdParsed.textContent =
+        r.parsedSeconds !== null ? `${r.parsedSeconds}s` : "—";
+      tr.appendChild(tdParsed);
+
+      const tdDrink = document.createElement("td");
+      tdDrink.textContent = r.drinkLabel;
+      tr.appendChild(tdDrink);
+
+      const tdFact = document.createElement("td");
+      tdFact.className = "num";
+      tdFact.textContent = r.skipped ? "—" : `×${r.drinkFactor}`;
+      tr.appendChild(tdFact);
+
+      const tdAdds = document.createElement("td");
+      tdAdds.className = "num";
+      if (!r.skipped && r.contribution !== null) {
+        tdAdds.appendChild(
+          document.createTextNode(
+            formatMinutesSecondsAlways(r.contribution),
+          ),
+        );
+        const sub = document.createElement("div");
+        sub.className = "formula";
+        sub.textContent = `2 × ${r.parsedSeconds}s × ${r.drinkFactor}`;
+        tdAdds.appendChild(sub);
+      } else {
+        tdAdds.textContent = "—";
+      }
+      tr.appendChild(tdAdds);
+
+      tb.appendChild(tr);
+    }
+    table.appendChild(tb);
+    els.estimateModalBody.appendChild(table);
+    els.estimateModal.hidden = false;
+  }
+
+  /** Beer baseline; water, other, and missing drink get the penalty multiplier. */
+  function estimateMultiplierForTop8(kind) {
+    if (kind === "beer") return 1;
+    return 1.2;
+  }
+
+  /** Top 8 in current (filtered) order: Σ (2 × seconds × drink factor), with per-row breakdown. */
+  function computeTop8EstimatedBreakdown(sortedList) {
+    const TOP_N = 8;
+    let totalSeconds = 0;
+    const rows = [];
+    const n = Math.min(TOP_N, sortedList.length);
+    for (let i = 0; i < n; i++) {
+      const p = sortedList[i];
+      const drink = normalizeDrink(p.drink);
+      const sec = parseTimeToSeconds(p.time);
+      if (sec === null) {
+        rows.push({
+          rank: i + 1,
+          name: p.name,
+          timeSheet: p.time,
+          parsedSeconds: null,
+          drinkLabel: drink.label,
+          drinkFactor: estimateMultiplierForTop8(drink.kind),
+          contribution: null,
+          skipped: true,
+        });
+        continue;
+      }
+      const factor = estimateMultiplierForTop8(drink.kind);
+      const contribution = 2 * sec * factor;
+      totalSeconds += contribution;
+      rows.push({
+        rank: i + 1,
+        name: p.name,
+        timeSheet: p.time,
+        parsedSeconds: sec,
+        drinkLabel: drink.label,
+        drinkFactor: factor,
+        contribution,
+        skipped: false,
+      });
+    }
+    return { totalSeconds, rows };
   }
 
   function gvizToPeople(resp) {
@@ -370,12 +522,13 @@
     const node = els.template.content.cloneNode(true);
     const li = node.querySelector(".cast-card");
     li.dataset.id = person.id;
+    const spotlight = node.querySelector(".cast-card__spotlight");
     if (isTurn) {
       li.classList.add("cast-card--turn");
+      spotlight.hidden = false;
+    } else {
+      spotlight.hidden = true;
     }
-
-    const turnBadge = node.querySelector(".cast-card__turn-badge");
-    turnBadge.hidden = !isTurn;
 
     const img = node.querySelector(".cast-card__photo");
     const wrap = node.querySelector(".cast-card__photo-wrap");
@@ -383,20 +536,12 @@
     const nameEl = node.querySelector(".cast-card__name");
     const drinkBadge = node.querySelector(".cast-card__drink-badge");
     const timeEl = node.querySelector(".cast-card__time-value");
-    const timeSecNote = node.querySelector(".cast-card__time-sec-note");
 
     nameEl.textContent = person.name;
     const drink = normalizeDrink(person.drink);
     drinkBadge.textContent = drink.label;
     drinkBadge.classList.add("cast-card__drink-badge--" + drink.kind);
     timeEl.textContent = person.time;
-    const secs = parseTimeToSeconds(person.time);
-    if (secs !== null && timeSecNote) {
-      timeSecNote.textContent = `${secs.toLocaleString()} s total`;
-      timeSecNote.hidden = false;
-    } else if (timeSecNote) {
-      timeSecNote.hidden = true;
-    }
     img.alt = `Photo of ${person.name}`;
     if (person.image) img.src = person.image;
     else img.removeAttribute("src");
@@ -463,10 +608,20 @@
     const turnId = turnPerson ? turnPerson.id : null;
 
     const TOP_N = 8;
+    const estBreakdown = computeTop8EstimatedBreakdown(list);
+    const estTotal = estBreakdown.totalSeconds;
+    const estLine =
+      estTotal > 0
+        ? `Est. combined ${formatMinutesSecondsAlways(estTotal)} · breakdown`
+        : "";
+
     list.forEach((p, i) => {
       if (i === 0) {
         els.castList.appendChild(
-          createTierRow("1 v", "Top " + TOP_N),
+          createTierRow("1 v", "Top " + TOP_N, {
+            text: estLine,
+            breakdown: estTotal > 0 ? estBreakdown : null,
+          }),
         );
       }
       if (i === TOP_N && list.length > TOP_N) {
@@ -492,6 +647,20 @@
 
   els.btnSyncSheet.addEventListener("click", () => {
     syncFromSheet().finally(() => renderAll());
+  });
+
+  if (els.estimateModalClose) {
+    els.estimateModalClose.addEventListener("click", closeEstimateModal);
+  }
+  if (els.estimateModal) {
+    els.estimateModal.addEventListener("click", (e) => {
+      if (e.target === els.estimateModal) closeEstimateModal();
+    });
+  }
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && els.estimateModal && !els.estimateModal.hidden) {
+      closeEstimateModal();
+    }
   });
 
   renderAll();

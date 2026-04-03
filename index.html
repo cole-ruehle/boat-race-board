@@ -51,9 +51,9 @@
       </div>
       <div class="title-block__meta">
         <h1 id="page-title" class="title-block__name">Beer Drinking Time</h1>
-        <p class="title-block__tagline">Season leaderboard · informal study cohort</p>
+        <p class="title-block__tagline">COACH GAO SAYS TO TILT</p>
         <div class="title-block__facts">
-          <span class="fact"><strong>Rank</strong> fastest total time (seconds)</span>
+          <span class="fact"><strong>Rank</strong> by fastest drinking time</span>
           <span class="fact"><strong>Updated</strong> <time id="lastUpdated">—</time></span>
         </div>
       </div>
@@ -64,7 +64,7 @@
     <section class="cast-section" aria-labelledby="cast-heading">
       <div class="section-heading">
         <h2 id="cast-heading" class="section-heading__title">Leaderboard</h2>
-        <p class="section-heading__sub">Name · drink · portrait · time in seconds (from Google Sheet)</p>
+        <p class="section-heading__sub">Name · drink · portrait · time (from Google Sheet)</p>
       </div>
       <div class="drink-filter is-hidden" id="drinkFilter" role="group" aria-label="Filter by drink">
         <span class="drink-filter__label">Show</span>
@@ -82,10 +82,27 @@
     <p>Beer Drinking Time</p>
   </footer>
 
+  <div class="modal-overlay" id="estimateModal" hidden role="dialog" aria-modal="true" aria-labelledby="estimateModalHeading">
+    <div class="modal modal--estimate">
+      <h2 id="estimateModalHeading" class="modal__title">1 v — combined estimate</h2>
+      <p class="modal__hint" id="estimateModalIntro">
+        Top 8 in this view. Each line: (2 × parsed seconds) × drink factor. Beer ×1; water, other, or blank ×1.2.
+      </p>
+      <p class="estimate-modal__total" id="estimateModalTotal"></p>
+      <div class="estimate-modal__table-wrap" id="estimateModalBody"></div>
+      <div class="modal__actions">
+        <button type="button" class="btn-close-modal" id="estimateModalClose">Close</button>
+      </div>
+    </div>
+  </div>
+
   <template id="castTierTemplate">
     <li class="cast-tier">
       <div class="cast-tier__inner">
-        <span class="cast-tier__title"></span>
+        <div class="cast-tier__row">
+          <span class="cast-tier__title"></span>
+          <button type="button" class="cast-tier__estimate is-hidden"></button>
+        </div>
         <span class="cast-tier__sub"></span>
       </div>
     </li>
@@ -93,7 +110,9 @@
 
   <template id="castRowTemplate">
     <li class="cast-card">
-      <span class="cast-card__turn-badge" hidden>TURN</span>
+      <div class="cast-card__spotlight" hidden>
+        <span class="cast-card__spotlight-text">TURN</span>
+      </div>
       <div class="cast-card__photo-wrap">
         <img class="cast-card__photo" alt="" />
         <div class="cast-card__photo-fallback" aria-hidden="true"></div>
@@ -105,11 +124,8 @@
           <span class="cast-card__drink-badge"></span>
         </div>
         <div class="cast-card__time-row">
-          <span class="cast-card__time-label">Time (seconds)</span>
-          <div class="cast-card__time-stack">
-            <span class="cast-card__time-value time-meter"></span>
-            <span class="cast-card__time-sec-note" hidden></span>
-          </div>
+          <span class="cast-card__time-label">Time</span>
+          <span class="cast-card__time-value time-meter"></span>
         </div>
       </div>
     </li>

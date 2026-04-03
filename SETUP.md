@@ -68,6 +68,10 @@ If you use the default column order **Name · Image · Time · Drink** with no m
 
 Add one data row per person. Other columns are ignored unless they are the only unnamed extra column (prefer using a **Drink** header).
 
+### “1 v” combined estimate
+
+Next to **1 v**, the board shows **Est. combined Xm Ys** (minutes and seconds) for the current view’s **top 8** (after your drink filter): it sums **2 ×** each person’s parsed time in seconds, times **×1** for **beer** or **×1.2** for **water**, **other**, or **blank** drink. **Click** the estimate to open a row-by-row breakdown. It’s a fun aggregate, not a number stored in the sheet.
+
 ### Several people editing
 
 Use **one** sheet and add **Editors** via Share → invite Google accounts. The page only **reads** the sheet when it loads or when someone clicks **Refresh sheet**:
